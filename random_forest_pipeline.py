@@ -1,5 +1,4 @@
 import argparse
-import os
 import pandas as pd
 import mlflow
 import mlflow.sklearn
