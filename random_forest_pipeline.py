@@ -49,22 +49,13 @@ def train_random_forest(X_train, y_train, X_test, y_test, n_estimators, max_dept
 
     return rf_model
 
-def main():
-    """Main execution workflow."""
-    parser = argparse.ArgumentParser(description="Train a Random Forest model on the HAR dataset.")
-    parser.add_argument("--training_data", type=str, required=True, help="Path to the dataset (CSV file).")
-    parser.add_argument("--n_estimators", type=int, default=100, help="Number of trees in the forest.")
-    parser.add_argument("--max_depth", type=int, default=None, help="Maximum depth of the trees.")
-    parser.add_argument("--test_size", type=float, default=0.2, help="Fraction of the data to use as test set.")
-    parser.add_argument("--random_state", type=int, default=42, help="Random seed for reproducibility.")
-    parser.add_argument("--k_features", type=int, default=10, help="Number of top features to select.")
-    args = parser.parse_args()
-
-    if not os.path.exists(args.training_data):
-        raise FileNotFoundError(f"The dataset file {args.training_data} does not exist.")
-
-    print(f"Loading data from {args.training_data}...")
-    data = pd.read_csv(args.training_data)
+    # Get the arugments we need to avoid fixing the dataset path in code
+parser = argparse.ArgumentParser()
+parser.add_argument("--trainingdata", type=str, required=True, help='Dataset for training')
+args = parser.parse_args()
+mlflow.autolog()
+df = pd.read_csv(args.trainingdata)
+print(df)
 
     X = data.iloc[:, :-1]  # All columns except the last
     y = data.iloc[:, -1]   # The last column is the target
@@ -77,28 +68,5 @@ def main():
         X_train, y_train, X_test, k=args.k_features
     )
 
-    # Start MLflow run
-    mlflow.start_run()
-    try:
-        mlflow.sklearn.autolog()  # Enable autologging for sklearn
 
-        model = train_random_forest(
-            X_train_reduced, y_train, X_test_reduced, y_test,
-            args.n_estimators, args.max_depth, args.random_state
-        )
 
-        # Log selected features explicitly
-        mlflow.log_param("selected_features", list(selected_features))
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-    finally:
-        mlflow.end_run()
-
-if __name__ == "__main__":
-    try:
-        main()
-    except Exception as e:
-        print(f"Error: {e}")
-        import traceback
-        traceback.print_exc()
