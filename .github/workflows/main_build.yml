@@ -20,4 +20,4 @@ jobs:
         run: az extension add -n ml
       - name: Submit Azure ML Job
         run: |
-          az ml job create --file job.yaml --resource-group CW2_MLOps_ResourceGroup --workspace-name IntelligenceEngineeringWS
+          az ml job create --file job.yaml --resource-group new_resource --workspace-name new_workspace
