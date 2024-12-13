@@ -1,6 +1,8 @@
 import argparse
 import os
 import pandas as pd
+import mlflow
+import mlflow.sklearn
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import classification_report, confusion_matrix, accuracy_score
@@ -76,10 +78,23 @@ def main():
         X_train, y_train, X_test, k=args.k_features
     )
 
-    model = train_random_forest(
-        X_train_reduced, y_train, X_test_reduced, y_test,
-        args.n_estimators, args.max_depth, args.random_state
-    )
+    # Start MLflow run
+    mlflow.start_run()
+    try:
+        mlflow.sklearn.autolog()  # Enable autologging for sklearn
+
+        model = train_random_forest(
+            X_train_reduced, y_train, X_test_reduced, y_test,
+            args.n_estimators, args.max_depth, args.random_state
+        )
+
+        # Log selected features explicitly
+        mlflow.log_param("selected_features", list(selected_features))
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+    finally:
+        mlflow.end_run()
 
 if __name__ == "__main__":
     try:
